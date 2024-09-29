@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词配对消除游戏</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .game-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .word-container {
+            width: 48%;
+            border: 2px solid #4a90e2;
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 300px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .word {
+            padding: 12px;
+            background-color: #e0e0e0;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .word:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+        .selected {
+            background-color: #ffd700;
+            color: #000;
+        }
+        .correct {
+            background-color: #32cd32;
+            color: #fff;
+            animation: fadeOut 0.5s ease forwards;
+        }
+        .hint {
+            background-color: #90ee90;
+            color: #000;
+            animation: pulse 1s infinite;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        h1 {
+            color: #4a90e2;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        #score, #result, #group-info {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #4a90e2;
+        }
+        #result {
+            font-weight: bold;
+            color: #32cd32;
+        }
+        .button {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background-color: #3a7bc8;
+            transform: translateY(-2px);
+        }
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #button-container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>单词配对消除游戏</h1>
+    <p>说明：点击左侧方框中的一个单词，然后点击右侧方框中你认为相对应的中文注释。如果配对正确，两个词条将会消失。尝试消除所有词条！如果一个单词被点击三次还未配对成功，将会显示提示。</p>
+    <div class="game-container">
+        <div class="word-container">
+            <h2>单词</h2>
+            <div id="english-words" class="word-grid"></div>
+        </div>
+        <div class="word-container">
+            <h2>中文注释</h2>
+            <div id="chinese-words" class="word-grid"></div>
+        </div>
+    </div>
+    <div id="score">得分：0 / 12</div>
+    <div id="group-info">当前组：1</div>
+    <div id="result"></div>
+    <div id="button-container">
+        <button id="prev-button" class="button" disabled>上一组</button>
+        <button id="reset-button" class="button">重置游戏</button>
+        <button id="next-button" class="button">下一组</button>
+    </div>
+
+    <script>
+        const wordPairs = [
+            ["backdrop", "背景"],
+            ["overwhelmingly", "压倒性地"],
+            ["philharmonic", "爱乐乐团"],
+            ["prudently", "谨慎地"],
+            ["attentive", "专心的"],
+            ["amendment", "修正案"],
+            ["depression", "抑郁"],
+            ["inflexible", "不灵活的"],
+            ["philosophy", "哲学"],
+            ["unsurpassed", "无与伦比的"],
+            ["indispensable", "不可或缺的"],
+            ["priority", "优先权"],
+            ["resident", "居民"],
+            ["fraud", "欺诈"],
+            ["deliberate", "故意的"],
+            ["vanity", "虚荣"],
+            ["depiction", "描绘"],
+            ["rage", "愤怒"],
+            ["propose", "提议"],
+            ["appeal", "吸引"],
+            ["outraged", "愤怒的"],
+            ["parachute", "降落伞"],
+            ["reckon", "计算"],
+            ["steep", "陡峭的"],
+            ["assuage", "缓和"],
+            ["inherently", "固有地"],
+            ["vague", "模糊的"],
+            ["prosecute", "起诉"],
+            ["verbally", "口头上"],
+            ["overshadow", "使...黯然失色"],
+            ["fragile", "脆弱的"],
+            ["provision", "条款"],
+            ["thrift", "节俭"],
+            ["undermine", "削弱"],
+            ["thrive", "繁荣"],
+            ["counsel", "建议"],
+            ["immunity", "免疫"],
+            ["dilute", "稀释"],
+            ["substantially", "实质上"],
+            ["plunge", "投入"],
+            ["resistant", "抵抗的"],
+            ["fascination", "迷恋"],
+            ["privilege", "特权"],
+            ["partial", "部分的"],
+            ["inconsistent", "不一致的"],
+            ["distort", "扭曲"],
+            ["persuasion", "说服"],
+            ["worthwhile", "值得的"],
+            ["paradox", "悖论"]
+        ];
+
+        let selectedEnglish = null;
+        let selectedChinese = null;
+        let score = 0;
+        let currentGroup = 0;
+        let englishWords = [];
+        let chineseWords = [];
+        let clickCounts = {};
+
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        };
+
+        const generateWords = () => {
+            const shuffledPairs = [...wordPairs];
+            shuffleArray(shuffledPairs);
+            englishWords = shuffledPairs.map(pair => pair[0]);
+            chineseWords = shuffledPairs.map(pair => pair[1]);
+            currentGroup = 0;
+            showGroup(currentGroup);
+        };
+
+        const showGroup = (groupIndex) => {
+            const totalGroups = Math.ceil(englishWords.length / 10);
+            if (groupIndex >= 0 && groupIndex < totalGroups) {
+                const start = groupIndex * 10;
+                const end = Math.min(start + 10, englishWords.length);
+                const currentEnglishWords = englishWords.slice(start, end);
+                const currentChineseWords = chineseWords.slice(start, end);
+                shuffleArray(currentEnglishWords);
+                shuffleArray(currentChineseWords);
+                updateWordDisplay('english-words', currentEnglishWords, true);
+                updateWordDisplay('chinese-words', currentChineseWords, false);
+                currentGroup = groupIndex;
+                updateGroupInfo(totalGroups);
+                updateButtonStates(totalGroups);
+                clickCounts = {};
+            }
+        };
+
+        const showNextGroup = () => showGroup(currentGroup + 1);
+        const showPrevGroup = () => showGroup(currentGroup - 1);
+
+        const updateWordDisplay = (containerId, words, isEnglish) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            words.forEach((word) => {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word';
+                wordElement.textContent = word;
+                wordElement.onclick = () => selectWord(wordElement, isEnglish, word);
+                container.appendChild(wordElement);
+            });
+        };
+
+        const selectWord = (element, isEnglish, word) => {
+            if (isEnglish) {
+                if (selectedEnglish) selectedEnglish.classList.remove('selected');
+                selectedEnglish = element;
+                selectedEnglish.classList.add('selected');
+                clickCounts[word] = (clickCounts[word] || 0) + 1;
+                if (clickCounts[word] === 3) showHint(word);
+            } else {
+                if (selectedChinese) selectedChinese.classList.remove('selected');
+                selectedChinese = element;
+                selectedChinese.classList.add('selected');
+            }
+            if (selectedEnglish && selectedChinese) checkMatch();
+        };
+
+        const showHint = (englishWord) => {
+            const chineseWord = wordPairs.find(pair => pair[0] === englishWord)[1];
+            const englishElement = document.querySelector(`#english-words .word:contains('${englishWord}')`);
+            const chineseElement = document.querySelector(`#chinese-words .word:contains('${chineseWord}')`);
+            if (englishElement && chineseElement) {
+                englishElement.classList.add('hint');
+                chineseElement.classList.add('hint');
+                setTimeout(() => {
+                    englishElement.classList.remove('hint');
+                    chineseElement.classList.remove('hint');
+                }, 2000);
+            }
+        };
+
+        const checkMatch = () => {
+            const englishWord = selectedEnglish.textContent;
+            const chineseWord = selectedChinese.textContent;
+            if (wordPairs.some(pair => pair[0] === englishWord && pair[1] === chineseWord)) {
+                selectedEnglish.classList.add('correct');
+                selectedChinese.classList.add('correct');
+                score++;
+                updateScore();
+                setTimeout(() => {
+                    removeWord(selectedEnglish, true);
+                    removeWord(selectedChinese, false);
+                    checkGroupEnd();
+                }, 500);
+            } else {
+                selectedEnglish.classList.remove('selected');
+                selectedChinese.classList.remove('selected');
+            }
+            selectedEnglish = null;
+            selectedChinese = null;
+        };
+
+        const removeWord = (element, isEnglish) => {
+            const container = isEnglish ? document.getElementById('english-words') : document.getElementById('chinese-words');
+            container.removeChild(element);
+        };
+
+        const updateScore = () => {
+            document.getElementById('score').textContent = `得分：${score} / ${wordPairs.length}`;
+        };
+
+        const updateGroupInfo = (totalGroups) => {
+            document.getElementById('group-info').textContent = `当前组：${currentGroup + 1} / ${totalGroups}`;
+        };
+
+        const checkGroupEnd = () => {
+            const englishContainer = document.getElementById('english-words');
+            const chineseContainer = document.getElementById('chinese-words');
+            if (englishContainer.children.length === 0 || chineseContainer.children.length === 0) {
+                const totalGroups = Math.ceil(englishWords.length / 10);
+                if (currentGroup === totalGroups - 1) {
+                    endGame();
+                } else {
+                    showNextGroup();
+                }
+            }
+        };
+
+        const endGame = () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `恭喜你！你已经成功匹配了${score}个单词对！游戏结束！`;
+        };
+
+        const resetGame = () => {
+            score = 0;
+            selectedEnglish = null;
+            selectedChinese = null;
+            updateScore();
+            document.getElementById('result').innerHTML = '';
+            generateWords();
+        };
+
+        const updateButtonStates = (totalGroups) => {
+            document.getElementById('prev-button').disabled = (currentGroup === 0);
+            document.getElementById('next-button').disabled = (currentGroup === totalGroups - 1);
+        };
+
+        generateWords();
+        document.getElementById('reset-button').addEventListener('click', resetGame);
+        document.getElementById('prev-button').addEventListener('click', showPrevGroup);
+        document.getElementById('next-button').addEventListener('click', showNextGroup);
+
+        // 添加自定义选择器
+        HTMLElement.prototype.contains = function(text) {
+            return this.textContent.includes(text);
+        };
+    </script>
+</body>
+</html>

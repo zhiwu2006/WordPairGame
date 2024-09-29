@@ -1,0 +1,136 @@
+.gameContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.wordSection {
+  width: 100%;
+  border: 2px solid #4a90e2;
+  border-radius: 15px;
+  padding: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.wordGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.word {
+  padding: 12px;
+  background-color: #e0e0e0;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.word:hover {
+  background-color: #d0d0d0;
+  transform: translateY(-2px);
+}
+
+.selected {
+  background-color: #ffd700;
+  color: #000;
+}
+
+.gameInfo {
+  text-align: center;
+  font-size: 1.2em;
+  color: #4a90e2;
+  width: 100%;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.button:hover {
+  background-color: #3a7bc8;
+  transform: translateY(-2px);
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.hint {
+  background-color: #90ee90;
+  animation: pulse 1s infinite;
+}
+
+.matched {
+  visibility: hidden;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .wordGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .word {
+    font-size: 0.9em;
+    min-height: 50px;
+  }
+
+  .button {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wordGrid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .word {
+    font-size: 0.8em;
+    min-height: 40px;
+  }
+
+  .button {
+    font-size: 0.9em;
+    padding: 6px 12px;
+  }
+}
